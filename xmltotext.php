@@ -62,19 +62,51 @@ class FullXML {
 		$this->idArray = $ids;
 		$this->parseFeed($this->url,$this->idArray);
 	}
+
+	/**
+	 * @return array containing photo path and id
+	 */
+	private function getFeaturedImage($imageurl){
+		$photos = simplexml_load_file($imageurl);
+		$path = $photos->photo->instances->instance->url;
+		$id = $photos->photo->id;
+		return array(
+			"path"=>(string)$path[0],
+			"id"=>(string)$id[0]
+		);
+	}
+
+
+	private function saveImage($photoArray,$location){
+		
+		mkdir($location);
+		file_put_contents($location, file_get_contents($photoArray["path"]));
+	}
+
 	private function parseFeed($a,$b){
 		$master = array();
 		foreach($b as $i) {
 			$temp = array();
 			$tempUrl = $a.'/'.$i;			 
 			$tempOut = simplexml_load_file($tempUrl);
+			echo '<pre>';
+			
+			$cats = simplexml_load_file($tempOut->categories['href']);
+			//$photos = simplexml_load_file($tempOut);
+			$category = $cats->category->name;
+			$photos = $this->getFeaturedImage($tempOut->photos["href"]);
+			$location = $tempOut->id;
+			$this->saveImage($photos,$location);
+			var_dump($photos);
+			die();
 			$text = strip_tags($tempOut->text);
 			$text = preg_replace('/&nbsp;/',' ',$text);
 			ob_start();
 			echo $tempOut->headline;;
 			echo "\r\n";
 			echo "\r\n";
-			echo $tempOut->createdDate;
+			echo $tempOut->createdDate . "&nbsp;&nbsp;";
+			echo "\r\n";
 			echo "\r\n";
 			echo $text;
 			$output = ob_get_contents();
