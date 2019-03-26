@@ -63,17 +63,20 @@ class FullXML {
 		$this->parseFeed($this->url,$this->idArray);
 	}
 	private function parseFeed($a,$b){
-		$master = array(); //new DOMDocument();
+		$master = array();
 		foreach($b as $i) {
 			$temp = array();
 			$tempUrl = $a.'/'.$i;			 
 			$tempOut = simplexml_load_file($tempUrl);
-			
+			$text = strip_tags($tempOut->text);
+			$text = preg_replace('/&nbsp;/',' ',$text);
 			ob_start();
-			//header("Content-type: application/rtf");
-			echo $tempOut->headline;
+			echo $tempOut->headline;;
 			echo "\r\n";
-			echo strip_tags($tempOut->text);
+			echo "\r\n";
+			echo $tempOut->createdDate;
+			echo "\r\n";
+			echo $text;
 			$output = ob_get_contents();
 			ob_end_clean();
 			$file = 'article.rtf';
@@ -83,7 +86,6 @@ class FullXML {
 			die();
 			$elem = $master->createElement('block',$tempOut->asXML());
 			$master->appendChild($elem);
-			//$master->addChild('newsItem',$tempOut);
 		}
 		$master->formatOutput = TRUE;
 		$master = $master->saveXML();
