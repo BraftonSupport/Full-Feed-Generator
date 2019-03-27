@@ -116,7 +116,6 @@ class FullXML {
 		fclose($fp);
 	}
 	/**
-	 * Undocumented function
 	 * @param object $xml
 	 * @return string
 	 */
@@ -126,6 +125,12 @@ class FullXML {
 		return $category;
 	}
 
+	/**
+	 *
+	 * @param string $a
+	 * @param string $b
+	 * @return void
+	 */
 	private function parseFeed($a,$b){
 		$master = array();
 		foreach($b as $i) {
@@ -137,7 +142,6 @@ class FullXML {
 			if(!file_exists($location)) { mkdir($location); }
 			$this->saveImage($photos,$location);
 			$this->saveText($tempOut,$location);
-			die();
 		}
 	}
 }
