@@ -68,6 +68,7 @@ class FullXML {
 	 */
 	private function getFeaturedImage($imageurl){
 		$photos = simplexml_load_file($imageurl);
+		var_dump($photos);
 		$path = $photos->photo->instances->instance->url;
 		$id = $photos->photo->id;
 		return array(
@@ -79,8 +80,10 @@ class FullXML {
 
 	private function saveImage($photoArray,$location){
 		
-		mkdir($location);
-		file_put_contents($location, file_get_contents($photoArray["path"]));
+		if(!file_exists($location)) { mkdir($location); }
+		echo __DIR__.'\\'.$location.'\\'.$photoArray['id'];
+		echo '<br />'.$photoArray['path'];
+		file_put_contents(__DIR__.'\\'.$location.'\\'.$photoArray['id'].".jpg", file_get_contents($photoArray["path"]));
 	}
 
 	private function parseFeed($a,$b){
@@ -130,7 +133,7 @@ class FullXML {
 
 if(isset($_POST['feed-url'])&&isset($_POST['feed-file'])) :
 
-	$feed = new Feed('./feeds/'.strip_tags($_POST['feed-file']));
+	$feed = new Feed(dirname(__DIR__) ."\\feeds\\".strip_tags($_POST['feed-file']));
 	$outxml = new FullXML($_POST['feed-url'].'/news', $feed->idArray);
 	echo '<pre>';
 	echo $feed->length . ' Nodes in file<br />';
