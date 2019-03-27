@@ -77,13 +77,53 @@ class FullXML {
 		);
 	}
 
-
-	private function saveImage($photoArray,$location){
-		
-		if(!file_exists($location)) { mkdir($location); }
+	/**
+	 *
+	 * @param array $photoArray
+	 * @param string $location
+	 * @return void
+	 */
+	private function saveImage($photoArray,$location){				
 		echo __DIR__.'\\'.$location.'\\'.$photoArray['id'];
 		echo '<br />'.$photoArray['path'];
 		file_put_contents(__DIR__.'\\'.$location.'\\'.$photoArray['id'].".jpg", file_get_contents($photoArray["path"]));
+	}
+
+	/**
+	 *
+	 * @param object $simple
+	 * @param string $location
+	 * @return void
+	 */
+	private function saveText($simple, $location) {
+		$text = strip_tags($simple->text);
+		$text = preg_replace('/&nbsp;/',' ',$text);
+		ob_start();
+		echo $simple->headline;;
+		echo "\r\n";
+		echo "\r\n";
+		echo $simple->createdDate;
+		echo "\r\n";
+		echo "\r\n";
+		echo $this->getCategory($simple);
+		echo "\r\n";
+		echo $text;
+		$output = ob_get_contents();
+		ob_end_clean();
+		$file = __DIR__.'\\'.$location.'\\'.$simple->id.'.rtf';
+		$fp = fopen($file, 'w');
+		fwrite($fp, html_entity_decode($output, ENT_QUOTES | ENT_XML1, 'UTF-8'));
+		fclose($fp);
+	}
+	/**
+	 * Undocumented function
+	 * @param object $xml
+	 * @return string
+	 */
+	private function getCategory($xml) : string{
+		$cats = simplexml_load_file($xml->categories['href']);
+		$category = $cats->category->name;
+		return $category;
 	}
 
 	private function parseFeed($a,$b){
@@ -92,42 +132,13 @@ class FullXML {
 			$temp = array();
 			$tempUrl = $a.'/'.$i;			 
 			$tempOut = simplexml_load_file($tempUrl);
-			echo '<pre>';
-			
-			$cats = simplexml_load_file($tempOut->categories['href']);
-			//$photos = simplexml_load_file($tempOut);
-			$category = $cats->category->name;
 			$photos = $this->getFeaturedImage($tempOut->photos["href"]);
 			$location = $tempOut->id;
+			if(!file_exists($location)) { mkdir($location); }
 			$this->saveImage($photos,$location);
-			var_dump($photos);
+			$this->saveText($tempOut,$location);
 			die();
-			$text = strip_tags($tempOut->text);
-			$text = preg_replace('/&nbsp;/',' ',$text);
-			ob_start();
-			echo $tempOut->headline;;
-			echo "\r\n";
-			echo "\r\n";
-			echo $tempOut->createdDate . "&nbsp;&nbsp;";
-			echo "\r\n";
-			echo "\r\n";
-			echo $text;
-			$output = ob_get_contents();
-			ob_end_clean();
-			$file = 'article.rtf';
-			$fp = fopen($file, 'w');
-			fwrite($fp, html_entity_decode($output, ENT_QUOTES | ENT_XML1, 'UTF-8'));
-			fclose($fp);
-			die();
-			$elem = $master->createElement('block',$tempOut->asXML());
-			$master->appendChild($elem);
 		}
-		$master->formatOutput = TRUE;
-		$master = $master->saveXML();
-		
-		$fp = fopen('feed2.xml', 'w');
-		fwrite($fp, html_entity_decode($master, ENT_QUOTES | ENT_XML1, 'UTF-8'));
-		fclose($fp);
 	}
 }
 
